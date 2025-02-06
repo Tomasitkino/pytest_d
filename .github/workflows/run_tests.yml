@@ -1,9 +1,21 @@
 name: Automated tests
 
 on:
-  push:
-    branches:
-      - master
+  workflow_dispatch:
+    inputs:
+      deployment_target:
+        description: Choose target
+        required: true
+        default:
+        type: choice
+        options:
+          - order_hotel
+          - correct_order_test
+          - cancel_order_test
+          - filter_order_test
+          - cancel_AA_test
+          - order_two_guests_test
+
 
 jobs:
   tests:
@@ -23,7 +35,22 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
-      - name: Run tests
-        run: pytest tests
-
+      - name: first test
+        if: "github.event.inputs.deployment_target == 'order_test'"
+        run: pytest tests/test_order_hotel.py
+      - name: second test
+        if: "github.event.inputs.deployment_target == 'correct_order_test'"
+        run: pytest tests/test_correct_order_hotel.py
+      - name: third test
+        if: "github.event.inputs.deployment_target == 'cancel_order_test'"
+        run: pytest tests/test_cancel_order_hotel.py
+      - name: forth test
+        if: "github.event.inputs.deployment_target == 'filter_order_test'"
+        run: pytest tests/test_filter_hotel.py
+      - name: fifth test
+        if: "github.event.inputs.deployment_target == 'cancel_AA_test'"
+        run: pytest tests/test_order_hotel_AA.py
+      - name: sixth test
+        if: "github.event.inputs.deployment_target == 'order_two_guests_test'"
+        run: pytest tests/test_order_hotel_two_guests.py
 
