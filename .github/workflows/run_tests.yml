@@ -9,7 +9,7 @@ on:
         default:
         type: choice
         options:
-          - order_hotel
+          - order_hotel_test
           - correct_order_test
           - cancel_order_test
           - filter_order_test
@@ -92,11 +92,12 @@ jobs:
 
       # Хранение сгенерированного отчета
       - name: Store generated report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v2
         with:
           name: _site
           path: _site
           retention-days: 7
+
 
   publish-report:
     runs-on: macos-latest
@@ -109,7 +110,7 @@ jobs:
           name: _site
 
       - name: Upload Pages artefact
-        uses: actions/upload-pages-artifact@v1
+        uses: actions/upload-pages-artifact@v2
 
       - name: Deploy to Github Pages
         id: deployment
