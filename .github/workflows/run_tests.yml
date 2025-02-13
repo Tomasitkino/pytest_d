@@ -34,6 +34,8 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r requirements.txt
+
+      # Ваши тесты
       - name: first test
         if: "github.event.inputs.deployment_target == 'order_test'"
         run: pytest tests/test_order_hotel.py --alluredir=allure-results
@@ -52,12 +54,13 @@ jobs:
       - name: sixth test
         if: "github.event.inputs.deployment_target == 'order_two_guests_test'"
         run: pytest tests/test_order_hotel_two_guests.py --alluredir=allure-results
+
+      # Хранение результатов тестов (Allure results)
       - name: Store allure results
-        uses: actions/upload-artifact@v4  # Обновлено до v4
+        uses: actions/upload-artifact@v4
         with:
           name: allure-results
-          path:
-            allure-results
+          path: allure-results
           retention-days: 7
 
   generate-report:
@@ -65,28 +68,34 @@ jobs:
     needs: tests
     name: Generate report
     steps:
-      - uses: actions/setup-java@v3
-        with:
-          distribution: 'microsoft'
-          java-version: '17'
-
       - name: Install Allure Commandline
         run: |
           curl -o allure.zip -L https://github.com/allure-framework/allure2/releases/download/2.18.1/allure-2.18.1.zip
           unzip allure.zip
           mv allure-2.18.1 allure
           sudo mv allure /usr/local/bin
-      - name: Download all workflow run artefacts
-        uses: actions/download-artifact@v4  # Обновлено до v4
+
+      # Проверка, установлен ли Allure
+      - name: Check Allure version
+        run: allure --version
+
+      # Загрузка артефактов с результатами тестов
+      - name: Download allure results
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results
+
+      # Генерация отчета Allure
       - name: Generate Allure Report
         run: |
           allure generate -c allure-results -o _site
-      - name: Store generates report
-        uses: actions/upload-artifact@v4  # Обновлено до v4
+
+      # Хранение сгенерированного отчета
+      - name: Store generated report
+        uses: actions/upload-artifact@v4
         with:
           name: _site
-          path:
-            _site
+          path: _site
           retention-days: 7
 
   publish-report:
@@ -94,10 +103,14 @@ jobs:
     needs: generate-report
     name: Report publication
     steps:
-      - name: Download all workflow run artifacts
-        uses: actions/download-artifact@v4  # Обновлено до v4
+      - name: Download generated report
+        uses: actions/download-artifact@v4
+        with:
+          name: _site
+
       - name: Upload Pages artefact
         uses: actions/upload-pages-artifact@v2
-      - name: Deploy to Github pages
+
+      - name: Deploy to Github Pages
         id: deployment
         uses: actions/deploy-pages@v1.2.9
