@@ -37,20 +37,72 @@ jobs:
         run: pip install -r requirements.txt
       - name: first test
         if: "github.event.inputs.deployment_target == 'order_test'"
-        run: pytest tests/test_order_hotel.py
+        run: pytest tests/test_order_hotel.py --alluredir=allure-results
       - name: second test
         if: "github.event.inputs.deployment_target == 'correct_order_test'"
-        run: pytest tests/test_correct_order_hotel.py
+        run: pytest tests/test_correct_order_hotel.py --alluredir=allure-results
       - name: third test
         if: "github.event.inputs.deployment_target == 'cancel_order_test'"
-        run: pytest tests/test_cancel_order_hotel.py
+        run: pytest tests/test_cancel_order_hotel.py --alluredir=allure-results
       - name: forth test
         if: "github.event.inputs.deployment_target == 'filter_order_test'"
-        run: pytest tests/test_filter_hotel.py
+        run: pytest tests/test_filter_hotel.py --alluredir=allure-results
       - name: fifth test
         if: "github.event.inputs.deployment_target == 'cancel_AA_test'"
-        run: pytest tests/test_order_hotel_AA.py
+        run: pytest tests/test_order_hotel_AA.py --alluredir=allure-results
       - name: sixth test
         if: "github.event.inputs.deployment_target == 'order_two_guests_test'"
-        run: pytest tests/test_order_hotel_two_guests.py
+        run: pytest tests/test_order_hotel_two_guests.py --alluredir=allure-results
+      - name: Store allure results
+        uses: actions/upload-artefact@v3
+        with:
+          name: allure-results
+          path:
+            allure-results
+          retention-days: 7
+
+  generate-report:
+    runs-on: macos-latest
+    needs: test
+    name: Generate report
+    steps:
+      - uses: actions/setup-java@v3
+        with:
+          distribution: 'microsoft'
+          java-version: '17'
+
+      - name: Install Allure Commandline
+        run: |
+          curl -o allure.zip -L https://github.com/allure-framework/allure2/releases/download/2.18.1/allure-2.18.1.zip
+          unzip allure.zip
+          mv allure-2.18.1 allure
+          sudo mv allure /usr/local/bin
+      - name: Download all workflow run artefacts
+        uses: actions/download-artefact@v3
+      - name: Generate Allure Report
+        run: |
+          allure generate -c allure-results -o _site
+      - name: Store generates report
+        uses: actions/upload-artefact@v3
+        with:
+          name: _site
+          path:
+            _site
+          retention-days: 7
+
+  publish-report:
+    runs-on: macos-latest
+    needs: generate-report
+    name: Report publication
+    steps:
+      - name: Download all workflow run artifacts
+        uses: actions/download-artefact@v3
+      - name: Upload Pages artefact
+        uses: actions/upload-pages-artifact@v2
+      - name: Deploy to Github pages
+        id: deployment
+        uses: actions/deploy-pages@v1.2.9
+
+
+
 
