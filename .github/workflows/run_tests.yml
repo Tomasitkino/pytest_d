@@ -72,8 +72,8 @@ jobs:
         run: |
           curl -o allure.zip -L https://github.com/allure-framework/allure2/releases/download/2.18.1/allure-2.18.1.zip
           unzip allure.zip
-          mv allure-2.18.1 allure
-          sudo mv allure /usr/local/bin
+          mv allure-2.18.1 /usr/local/allure
+          ln -s /usr/local/allure/bin/allure /usr/local/bin/allure
 
       # Проверка, установлен ли Allure
       - name: Check Allure version
