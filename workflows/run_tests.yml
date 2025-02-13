@@ -1,0 +1,116 @@
+name: Automated tests
+
+on:
+  workflow_dispatch:
+    inputs:
+      deployment_target:
+        description: Choose target
+        required: true
+        default:
+        type: choice
+        options:
+          - order_hotel
+          - correct_order_test
+          - cancel_order_test
+          - filter_order_test
+          - cancel_AA_test
+          - order_two_guests_test
+
+jobs:
+  tests:
+    runs-on: macos-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.12"
+
+      - name: Install Chrome
+        run: brew install --cask google-chrome
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      # Ваши тесты
+      - name: first test
+        if: "github.event.inputs.deployment_target == 'order_test'"
+        run: pytest tests/test_order_hotel.py --alluredir=allure-results
+      - name: second test
+        if: "github.event.inputs.deployment_target == 'correct_order_test'"
+        run: pytest tests/test_correct_order_hotel.py --alluredir=allure-results
+      - name: third test
+        if: "github.event.inputs.deployment_target == 'cancel_order_test'"
+        run: pytest tests/test_cancel_order_hotel.py --alluredir=allure-results
+      - name: forth test
+        if: "github.event.inputs.deployment_target == 'filter_order_test'"
+        run: pytest tests/test_filter_hotel.py --alluredir=allure-results
+      - name: fifth test
+        if: "github.event.inputs.deployment_target == 'cancel_AA_test'"
+        run: pytest tests/test_order_hotel_AA.py --alluredir=allure-results
+      - name: sixth test
+        if: "github.event.inputs.deployment_target == 'order_two_guests_test'"
+        run: pytest tests/test_order_hotel_two_guests.py --alluredir=allure-results
+
+      # Хранение результатов тестов (Allure results)
+      - name: Store allure results
+        uses: actions/upload-artifact@v4
+        with:
+          name: allure-results
+          path: allure-results
+          retention-days: 7
+
+  generate-report:
+    runs-on: macos-latest
+    needs: tests
+    name: Generate report
+    steps:
+      - name: Install Allure Commandline
+        run: |
+          curl -o allure.zip -L https://github.com/allure-framework/allure2/releases/download/2.18.1/allure-2.18.1.zip
+          unzip allure.zip
+          mv allure-2.18.1 allure
+          sudo mv allure /usr/local/bin
+
+      # Проверка, установлен ли Allure
+      - name: Check Allure version
+        run: allure --version
+
+      # Загрузка артефактов с результатами тестов
+      - name: Download allure results
+        uses: actions/download-artifact@v4
+        with:
+          name: allure-results
+
+      # Генерация отчета Allure
+      - name: Generate Allure Report
+        run: |
+          allure generate -c allure-results -o _site
+
+      # Хранение сгенерированного отчета
+      - name: Store generated report
+        uses: actions/upload-artifact@v4
+        with:
+          name: _site
+          path: _site
+          retention-days: 7
+
+  publish-report:
+    runs-on: macos-latest
+    needs: generate-report
+    name: Report publication
+    steps:
+      - name: Download generated report
+        uses: actions/download-artifact@v4
+        with:
+          name: _site
+
+      - name: Upload Pages artefact
+        uses: actions/upload-pages-artifact@v2
+
+      - name: Deploy to Github Pages
+        id: deployment
+        uses: actions/deploy-pages@v1.2.9
