@@ -16,7 +16,6 @@ on:
           - cancel_AA_test
           - order_two_guests_test
 
-
 jobs:
   tests:
     runs-on: macos-latest
@@ -63,7 +62,7 @@ jobs:
 
   generate-report:
     runs-on: macos-latest
-    needs: test
+    needs: tests  # Изменено с 'test' на 'tests'
     name: Generate report
     steps:
       - uses: actions/setup-java@v3
@@ -102,6 +101,7 @@ jobs:
       - name: Deploy to Github pages
         id: deployment
         uses: actions/deploy-pages@v1.2.9
+
 
 
 
