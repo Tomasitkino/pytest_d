@@ -53,7 +53,7 @@ jobs:
         if: "github.event.inputs.deployment_target == 'order_two_guests_test'"
         run: pytest tests/test_order_hotel_two_guests.py --alluredir=allure-results
       - name: Store allure results
-        uses: actions/upload-artefact@v3
+        uses: actions/upload-artifact@v3  # Исправлено на 'upload-artifact'
         with:
           name: allure-results
           path:
@@ -62,7 +62,7 @@ jobs:
 
   generate-report:
     runs-on: macos-latest
-    needs: tests  # Изменено с 'test' на 'tests'
+    needs: tests
     name: Generate report
     steps:
       - uses: actions/setup-java@v3
@@ -77,12 +77,12 @@ jobs:
           mv allure-2.18.1 allure
           sudo mv allure /usr/local/bin
       - name: Download all workflow run artefacts
-        uses: actions/download-artefact@v3
+        uses: actions/download-artifact@v3  # Исправлено на 'download-artifact'
       - name: Generate Allure Report
         run: |
           allure generate -c allure-results -o _site
       - name: Store generates report
-        uses: actions/upload-artefact@v3
+        uses: actions/upload-artifact@v3  # Исправлено на 'upload-artifact'
         with:
           name: _site
           path:
@@ -95,12 +95,13 @@ jobs:
     name: Report publication
     steps:
       - name: Download all workflow run artifacts
-        uses: actions/download-artefact@v3
+        uses: actions/download-artifact@v3  # Исправлено на 'download-artifact'
       - name: Upload Pages artefact
         uses: actions/upload-pages-artifact@v2
       - name: Deploy to Github pages
         id: deployment
         uses: actions/deploy-pages@v1.2.9
+
 
 
 
