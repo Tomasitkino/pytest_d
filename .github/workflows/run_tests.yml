@@ -107,7 +107,7 @@ jobs:
           name: _site
           path: _site
           retention-days: 7
-
+          
   publish-report:
     runs-on: macos-latest
     needs: generate-report
@@ -118,9 +118,15 @@ jobs:
         with:
           name: _site
 
-      - name: Upload Pages artefact
-        uses: actions/upload-pages-artifact@v2
+      - name: List files in the downloaded artifact
+        run: ls -R _site  # Это поможет убедиться, что артефакт загружен корректно
 
-      - name: Deploy to Github Pages
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v2
+        with:
+          path: _site
+
+      - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v1.2.9
+        uses: actions/deploy-pages@v2  # Обновите до последней версии
+
