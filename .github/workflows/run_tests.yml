@@ -30,7 +30,7 @@ jobs:
 
       # Кэширование зависимостей Python
       - name: Cache Python dependencies
-        uses: actions/cache@v4  # Используем версию v4
+        uses: actions/cache@v4
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-python-${{ hashFiles('**/requirements.txt') }}
@@ -45,7 +45,7 @@ jobs:
 
       # Ваши тесты
       - name: first test
-        if: "github.event.inputs.deployment_target == 'order_hotel_test'"  # Оставляем 'order_hotel_test'
+        if: "github.event.inputs.deployment_target == 'order_hotel_test'"
         run: pytest tests/test_order_hotel.py --alluredir=allure-results
       - name: second test
         if: "github.event.inputs.deployment_target == 'correct_order_test'"
@@ -67,7 +67,7 @@ jobs:
       - name: Store allure results
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results-${{ github.event.inputs.deployment_target }}  # Оставляем название с переменной
+          name: allure-results-${{ github.event.inputs.deployment_target }}
           path: allure-results
           retention-days: 7
 
@@ -91,8 +91,8 @@ jobs:
       - name: Download allure results
         uses: actions/download-artifact@v4
         with:
-          name: allure-results-*  # Оставляем использование шаблона
-          pattern: allure-results-*
+          name: allure-results-${{ github.event.inputs.deployment_target }}
+          pattern: allure-results-${{ github.event.inputs.deployment_target }}
           merge-multiple: true
 
       # Генерация отчета Allure
