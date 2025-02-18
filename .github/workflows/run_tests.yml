@@ -115,6 +115,9 @@ jobs:
   publish-report:
     runs-on: macos-latest
     needs: generate-report
+    permissions:
+      contents: write  # Для деплоя в GitHub Pages, нужно разрешение на запись
+      id-token: write  # Разрешение для работы с id-token
     name: Report publication
     steps:
       - name: Download generated report
