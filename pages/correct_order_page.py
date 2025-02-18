@@ -246,8 +246,6 @@ class Correct_order_page(Base):
 
     def click_new_check_in_day_1(self):
         with allure.step('Выбрать новую дату выезда'):
-            new_check_in_day_1 = self.get_new_check_in_day_1()
-            self.scroll_to_element(new_check_in_day_1)
             self.get_new_check_in_day_1().click()
             print('Click new_check_in_day_1')
 
@@ -482,19 +480,19 @@ class Correct_order_page(Base):
                 self.assert_word_1(phone_hotel_check_element, "+756893023948")
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #
+    #

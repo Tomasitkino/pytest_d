@@ -97,7 +97,7 @@ def test_correct_order_hotel_1(driver):
         raise e
     finally:
         # Закрываем драйвер только после выполнения всех операций, включая скриншот
-        driver.quit()
+        pass
 
 
 @allure.feature('Корректировка бронирования')
@@ -309,5 +309,5 @@ def test_correct_order_hotel_5(driver):
 
 
 
-
-
+#
+#
