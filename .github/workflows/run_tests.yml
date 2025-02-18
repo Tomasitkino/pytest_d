@@ -19,7 +19,9 @@ jobs:
   tests:
     runs-on: macos-latest
     permissions:
-      id-token: write  # Необходимое разрешение для работы с ID токенами
+      contents: read  # Прочтение репозитория
+      id-token: write  # Разрешение для получения и использования ID токенов
+
 
     steps:
       - name: Checkout repository
