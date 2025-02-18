@@ -114,19 +114,21 @@ jobs:
     name: Report publication
     steps:
       - name: Download generated report
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v4  # Указание версии v4 для download-artifact
         with:
           name: _site
 
       - name: List files in the downloaded artifact
-        run: ls -R _site  # Это поможет убедиться, что артефакт загружен корректно
+        run: |
+          echo "Listing files in _site"
+          ls -R _site || echo "_site not found"  # Проверка наличия артефакта
 
       - name: Upload Pages artifact
-        uses: actions/upload-artifact@v4  # Убедитесь, что версия указана как v4
+        uses: actions/upload-artifact@v4  # Явное указание на v4 для upload-artifact
         with:
+          name: _site
           path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v2  # Убедитесь, что версия актуальна
-  
+        uses: actions/deploy-pages@v2  # Для деплоя используем deploy-pages@v2
