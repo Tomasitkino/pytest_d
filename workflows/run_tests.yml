@@ -6,9 +6,10 @@ on:
       deployment_target:
         description: Choose target
         required: true
+        default:
         type: choice
         options:
-          - order_hotel_test
+          - order_hotel
           - correct_order_test
           - cancel_order_test
           - filter_order_test
@@ -24,18 +25,9 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Setup Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v4
         with:
           python-version: "3.12"
-
-      # Кэширование зависимостей Python
-      - name: Cache Python dependencies
-        uses: actions/cache@v4  # Используем версию v4
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-python-${{ hashFiles('**/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-python-
 
       - name: Install Chrome
         run: brew install --cask google-chrome
@@ -45,7 +37,7 @@ jobs:
 
       # Ваши тесты
       - name: first test
-        if: "github.event.inputs.deployment_target == 'order_hotel_test'"  # Оставляем 'order_hotel_test'
+        if: "github.event.inputs.deployment_target == 'order_test'"
         run: pytest tests/test_order_hotel.py --alluredir=allure-results
       - name: second test
         if: "github.event.inputs.deployment_target == 'correct_order_test'"
@@ -67,7 +59,7 @@ jobs:
       - name: Store allure results
         uses: actions/upload-artifact@v4
         with:
-          name: allure-results-${{ github.event.inputs.deployment_target }}  # Оставляем название с переменной
+          name: allure-results
           path: allure-results
           retention-days: 7
 
@@ -80,8 +72,8 @@ jobs:
         run: |
           curl -o allure.zip -L https://github.com/allure-framework/allure2/releases/download/2.18.1/allure-2.18.1.zip
           unzip allure.zip
-          sudo mv allure-2.18.1 /usr/local/allure
-          sudo ln -s /usr/local/allure/bin/allure /usr/local/bin/allure
+          mv allure-2.18.1 allure
+          sudo mv allure /usr/local/bin
 
       # Проверка, установлен ли Allure
       - name: Check Allure version
@@ -91,9 +83,7 @@ jobs:
       - name: Download allure results
         uses: actions/download-artifact@v4
         with:
-          name: allure-results-*  # Оставляем использование шаблона
-          pattern: allure-results-*
-          merge-multiple: true
+          name: allure-results
 
       # Генерация отчета Allure
       - name: Generate Allure Report
