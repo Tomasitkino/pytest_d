@@ -66,6 +66,10 @@ jobs:
         if: "github.event.inputs.deployment_target == 'order_two_guests_test'"
         run: pytest tests/test_order_hotel_two_guests.py --alluredir=allure-results
 
+      # Проверка результатов тестов
+      - name: List allure-results content
+        run: ls -R allure-results || echo "allure-results not found"
+
       # Хранение результатов тестов (Allure results)
       - name: Store allure results
         uses: actions/upload-artifact@v4
@@ -98,14 +102,26 @@ jobs:
           pattern: allure-results-${{ github.event.inputs.deployment_target }}
           merge-multiple: true
 
-      # Убедимся, что директория _site существует
+      # Убедимся, что директория _site существует и очищена
       - name: Ensure _site directory exists
-        run: mkdir -p _site
+        run: |
+          echo "Checking if _site exists..."
+          if [ -d "_site" ]; then
+            echo "_site exists, cleaning up..."
+            rm -rf _site
+          else
+            echo "_site does not exist, creating it..."
+            mkdir -p _site
+          fi
 
       # Генерация отчета Allure
       - name: Generate Allure Report
         run: |
           allure generate -c allure-results -o _site || (echo "Allure report generation failed" && exit 1)
+
+      # Проверка содержимого директории _site
+      - name: List files in _site
+        run: ls -R _site || echo "_site not found"
 
       # Хранение сгенерированного отчета
       - name: Store generated report
