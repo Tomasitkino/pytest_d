@@ -168,6 +168,12 @@ jobs:
           echo "Checking for symbolic links in _site directory..."
           find _site -type l && exit 1 || echo "No symbolic links found in _site"
 
+      # Шаг для удаления символических ссылок
+      - name: Remove symbolic links in _site
+        run: |
+          echo "Removing symbolic links in _site directory..."
+          find _site -type l -exec rm {} \; || echo "No symbolic links found to remove"
+
       - name: List existing artifacts
         run: |
           echo "Listing all artifacts for the current run:"
