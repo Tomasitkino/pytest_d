@@ -47,24 +47,21 @@ jobs:
         run: pip install -r requirements.txt
 
       # Запуск тестов в зависимости от выбранной цели
-      - name: first test
-        if: "github.event.inputs.deployment_target == 'order_hotel_test'"
-        run: pytest tests/test_order_hotel.py --alluredir=allure-results
-      - name: second test
-        if: "github.event.inputs.deployment_target == 'correct_order_test'"
-        run: pytest tests/test_correct_order_hotel.py --alluredir=allure-results
-      - name: third test
-        if: "github.event.inputs.deployment_target == 'cancel_order_test'"
-        run: pytest tests/test_cancel_order_hotel.py --alluredir=allure-results
-      - name: forth test
-        if: "github.event.inputs.deployment_target == 'filter_order_test'"
-        run: pytest tests/test_filter_hotel.py --alluredir=allure-results
-      - name: fifth test
-        if: "github.event.inputs.deployment_target == 'cancel_AA_test'"
-        run: pytest tests/test_order_hotel_AA.py --alluredir=allure-results
-      - name: sixth test
-        if: "github.event.inputs.deployment_target == 'order_two_guests_test'"
-        run: pytest tests/test_order_hotel_two_guests.py --alluredir=allure-results
+      - name: Run tests based on deployment target
+        run: |
+          if [ "${{ github.event.inputs.deployment_target }}" == "order_hotel_test" ]; then
+            pytest tests/test_order_hotel.py --alluredir=allure-results
+          elif [ "${{ github.event.inputs.deployment_target }}" == "correct_order_test" ]; then
+            pytest tests/test_correct_order_hotel.py --alluredir=allure-results
+          elif [ "${{ github.event.inputs.deployment_target }}" == "cancel_order_test" ]; then
+            pytest tests/test_cancel_order_hotel.py --alluredir=allure-results
+          elif [ "${{ github.event.inputs.deployment_target }}" == "filter_order_test" ]; then
+            pytest tests/test_filter_hotel.py --alluredir=allure-results
+          elif [ "${{ github.event.inputs.deployment_target }}" == "cancel_AA_test" ]; then
+            pytest tests/test_order_hotel_AA.py --alluredir=allure-results
+          elif [ "${{ github.event.inputs.deployment_target }}" == "order_two_guests_test" ]; then
+            pytest tests/test_order_hotel_two_guests.py --alluredir=allure-results
+          fi
 
       # Проверка содержимого allure-results после выполнения тестов
       - name: List allure-results content
@@ -83,7 +80,7 @@ jobs:
   generate-report:
     runs-on: macos-latest
     needs: tests
-    name: Generate report
+    name: Generate Allure Report
     steps:
       - name: Install Allure Commandline
         run: |
@@ -134,22 +131,22 @@ jobs:
           echo "Listing files in _site"
           ls -R _site || echo "_site directory not found"
 
+      # Хранение сгенерированного отчета
       - name: Store generated report
         uses: actions/upload-artifact@v4
         with:
-          name: _site-${{ github.run_id }}-${{ github.sha }}  # Уникальное имя с использованием run_id и sha
+          name: _site-${{ github.run_id }}-${{ github.sha }}
           path: _site
           retention-days: 7
-          overwrite: false  # Не разрешаем перезапись, поскольку имя уникально
-
+          overwrite: false  # Уникальное имя, предотвращает перезапись
 
   publish-report:
     runs-on: macos-latest
     needs: generate-report
     permissions:
-      contents: write  # Для деплоя в GitHub Pages, нужно разрешение на запись
+      contents: write  # Для деплоя в GitHub Pages
       id-token: write  # Разрешение для работы с id-token
-    name: Report publication
+    name: Publish Allure Report to GitHub Pages
     steps:
       - name: Download generated report
         uses: actions/download-artifact@v4
@@ -164,22 +161,21 @@ jobs:
           curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
                "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" | jq '.artifacts[] | .name'
 
-
       - name: Upload Pages artifact
-        uses: actions/upload-artifact@v4  # Явное указание на v4 для upload-artifact
+        uses: actions/upload-artifact@v4
         with:
           name: _site
           path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4  # Используем deploy-pages для деплоя на GitHub Pages
+        uses: actions/deploy-pages@v4
         with:
-          path: _site  # Используем правильный параметр path для указания директории
-          token: ${{ secrets.GITHUB_TOKEN }}  # Используем секретный токен для деплоя
-          timeout: 600000  # Увеличиваем таймаут, если это необходимо
-          error_count: 10  # Максимальное количество ошибок
-          reporting_interval: 5000  # Интервал для отчетности
-          artifact_name: github-pages  # Указываем имя артефакта, который будет деплоиться
-          preview: false  # Выключаем предварительный просмотр
+          path: _site
+          token: ${{ secrets.GITHUB_TOKEN }}
+          timeout: 600000
+          error_count: 10
+          reporting_interval: 5000
+          artifact_name: github-pages
+          preview: false
 
