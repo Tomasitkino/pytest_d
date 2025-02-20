@@ -152,6 +152,7 @@ jobs:
       contents: write  # Для деплоя в GitHub Pages
       id-token: write  # Разрешение для работы с id-token
       actions: read     # Разрешение для чтения артефактов GitHub Actions
+      pages: write      # Разрешение для записи в GitHub Pages (важное изменение!)
     name: Publish Allure Report to GitHub Pages
     steps:
       - name: Download generated report
