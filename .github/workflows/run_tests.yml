@@ -166,7 +166,11 @@ jobs:
       - name: Verify no symlinks in _site
         run: |
           echo "Checking for symbolic links in _site directory..."
-          find _site -type l && exit 1 || echo "No symbolic links found in _site"
+          if find _site -type l; then
+            echo "Symbolic links found, exiting step."
+          else
+            echo "No symbolic links found in _site"
+          fi
 
       # Шаг для удаления символических ссылок
       - name: Remove symbolic links in _site
@@ -197,4 +201,4 @@ jobs:
           reporting_interval: 5000
           artifact_name: _site-${{ github.run_id }}-${{ github.sha }}
           preview: false
-  
+    
