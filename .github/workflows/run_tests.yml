@@ -211,6 +211,12 @@ jobs:
             echo "No symbolic links found in _site"
           fi
 
+      # Шаг для проверки жестких ссылок
+      - name: Check for hard links in _site
+        run: |
+          echo "Checking for hard links in _site directory..."
+          find _site -type f -links +1 -exec echo "Hard link found: {}" \; || echo "No hard links found"
+
       # Проверка размера директории _site
       - name: Check the size of _site directory
         run: |
@@ -235,4 +241,3 @@ jobs:
           reporting_interval: 5000
           artifact_name: _site-${{ github.run_id }}-${{ github.sha }}
           preview: false
-      
