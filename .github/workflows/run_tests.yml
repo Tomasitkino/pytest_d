@@ -154,13 +154,16 @@ jobs:
       - name: Download generated report
         uses: actions/download-artifact@v4
         with:
-          name: _site  # Указываем имя артефакта, который был загружен на предыдущем шаге
-          path: _site  # Указываем путь для сохранения артефакта
+          name: _site-${{ github.run_id }}-${{ github.sha }}
+          path: _site
+          merge-multiple: true
 
-      - name: List files in the downloaded artifact
+      - name: List existing artifacts
         run: |
-          echo "Listing files in _site"
-          ls -R _site || echo "_site directory not found"  # Проверка наличия артефакта
+          echo "Listing all artifacts for the current run:"
+          curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
+               "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" | jq '.artifacts[] | .name'
+
 
       - name: Upload Pages artifact
         uses: actions/upload-artifact@v4  # Явное указание на v4 для upload-artifact
