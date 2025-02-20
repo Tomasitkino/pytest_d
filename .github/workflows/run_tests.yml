@@ -166,8 +166,10 @@ jobs:
       - name: Verify no symlinks in _site
         run: |
           echo "Checking for symbolic links in _site directory..."
-          if find _site -type l; then
+          symlinks=$(find _site -type l)
+          if [ -n "$symlinks" ]; then
             echo "Symbolic links found, exiting step."
+            echo "$symlinks"
           else
             echo "No symbolic links found in _site"
           fi
@@ -178,18 +180,13 @@ jobs:
           echo "Removing symbolic links in _site directory..."
           find _site -type l -exec rm {} \; || echo "No symbolic links found to remove"
 
-      - name: List existing artifacts
+      # Шаг для проверки размера директории _site
+      - name: Check the size of _site
         run: |
-          echo "Listing all artifacts for the current run:"
-          curl -s -H "Authorization: Bearer ${{ secrets.GITHUB_TOKEN }}" \
-               "https://api.github.com/repos/${{ github.repository }}/actions/runs/${{ github.run_id }}/artifacts" | jq '.artifacts[] | .name'
+          echo "Checking the size of _site directory..."
+          du -sh _site || echo "_site directory not found"
 
-      - name: Upload Pages artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: _site
-          path: _site
-
+      # Шаг для деплоя в GitHub Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
@@ -201,4 +198,4 @@ jobs:
           reporting_interval: 5000
           artifact_name: _site-${{ github.run_id }}-${{ github.sha }}
           preview: false
-    
+  
