@@ -46,7 +46,7 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # Ваши тесты
+      # Запуск тестов в зависимости от выбранной цели
       - name: first test
         if: "github.event.inputs.deployment_target == 'order_hotel_test'"
         run: pytest tests/test_order_hotel.py --alluredir=allure-results
@@ -66,9 +66,11 @@ jobs:
         if: "github.event.inputs.deployment_target == 'order_two_guests_test'"
         run: pytest tests/test_order_hotel_two_guests.py --alluredir=allure-results
 
-      # Проверка результатов тестов
+      # Проверка содержимого allure-results после выполнения тестов
       - name: List allure-results content
-        run: ls -R allure-results || echo "allure-results not found"
+        run: |
+          echo "Listing contents of allure-results directory"
+          ls -R allure-results || echo "allure-results not found"
 
       # Хранение результатов тестов (Allure results)
       - name: Store allure results
@@ -77,7 +79,7 @@ jobs:
           name: allure-results-${{ github.event.inputs.deployment_target }}
           path: allure-results
           retention-days: 7
-
+  
   generate-report:
     runs-on: macos-latest
     needs: tests
@@ -117,11 +119,15 @@ jobs:
       # Генерация отчета Allure
       - name: Generate Allure Report
         run: |
+          echo "Listing contents of allure-results directory"
+          ls -R allure-results || echo "allure-results directory not found"
           allure generate -c allure-results -o _site || (echo "Allure report generation failed" && exit 1)
 
-      # Проверка содержимого директории _site
-      - name: List files in _site
-        run: ls -R _site || echo "_site not found"
+      # Проверка содержимого директории _site после генерации отчета
+      - name: List files in _site after report generation
+        run: |
+          echo "Listing files in _site"
+          ls -R _site || echo "_site directory not found"
 
       # Хранение сгенерированного отчета
       - name: Store generated report
@@ -130,6 +136,7 @@ jobs:
           name: _site
           path: _site
           retention-days: 7
+
 
   publish-report:
     runs-on: macos-latest
@@ -140,9 +147,9 @@ jobs:
     name: Report publication
     steps:
       - name: Download generated report
-        uses: actions/download-artifact@v4  # Указание версии v4 для download-artifact
+        uses: actions/download-artifact@v4
         with:
-          name: _site
+          name: _site  # Имя артефакта, который был загружен ранее
 
       - name: List files in the downloaded artifact
         run: |
@@ -150,11 +157,14 @@ jobs:
           ls -R _site || echo "_site directory not found"  # Проверка наличия артефакта
 
       - name: Upload Pages artifact
-        uses: actions/upload-artifact@v4  # Явное указание на v4 для upload-artifact
+        uses: actions/upload-artifact@v4
         with:
           name: _site
           path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4  # Для деплоя используем deploy-pages@v4
+        uses: actions/deploy-pages@v4
+        with:
+          folder: _site  # Указываем правильный путь к сгенерированному отчету
+
