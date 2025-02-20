@@ -180,6 +180,12 @@ jobs:
           echo "Checking for hard links in _site directory..."
           find _site -type f -links +1 -exec echo "Hard link found: {}" \; || echo "No hard links found"
 
+      # Шаг для удаления жестких ссылок в _site
+      - name: Remove hard links recursively in _site
+        run: |
+          echo "Removing hard links recursively in _site directory..."
+          find _site -type f -links +1 -exec rm -v {} \; || echo "No hard links found to remove"
+
       # Проверка прав доступа в _site
       - name: Check permissions of files in _site
         run: |
@@ -229,4 +235,4 @@ jobs:
           reporting_interval: 5000
           artifact_name: _site-${{ github.run_id }}-${{ github.sha }}
           preview: false
-    
+      
