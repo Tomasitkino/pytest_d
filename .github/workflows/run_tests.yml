@@ -21,6 +21,7 @@ jobs:
     permissions:
       contents: read  # Прочтение репозитория
       id-token: write  # Разрешение для получения и использования ID токенов
+      actions: read     # Разрешение для чтения артефактов GitHub Actions
 
     steps:
       - name: Checkout repository
@@ -146,6 +147,7 @@ jobs:
     permissions:
       contents: write  # Для деплоя в GitHub Pages
       id-token: write  # Разрешение для работы с id-token
+      actions: read     # Разрешение для чтения артефактов GitHub Actions
     name: Publish Allure Report to GitHub Pages
     steps:
       - name: Download generated report
@@ -178,4 +180,3 @@ jobs:
           reporting_interval: 5000
           artifact_name: github-pages
           preview: false
-
