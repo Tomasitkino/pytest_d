@@ -162,6 +162,12 @@ jobs:
           path: _site
           merge-multiple: true
 
+      # Шаг для проверки наличия символических ссылок в _site
+      - name: Verify no symlinks in _site
+        run: |
+          echo "Checking for symbolic links in _site directory..."
+          find _site -type l && exit 1 || echo "No symbolic links found in _site"
+
       - name: List existing artifacts
         run: |
           echo "Listing all artifacts for the current run:"
@@ -185,3 +191,4 @@ jobs:
           reporting_interval: 5000
           artifact_name: _site-${{ github.run_id }}-${{ github.sha }}
           preview: false
+  
