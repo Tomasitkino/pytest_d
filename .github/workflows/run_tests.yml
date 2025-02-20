@@ -79,7 +79,7 @@ jobs:
           name: allure-results-${{ github.event.inputs.deployment_target }}
           path: allure-results
           retention-days: 7
-  
+
   generate-report:
     runs-on: macos-latest
     needs: tests
@@ -92,7 +92,6 @@ jobs:
           sudo mv allure-2.18.1 /usr/local/allure
           sudo ln -s /usr/local/allure/bin/allure /usr/local/bin/allure
 
-      # Проверка, установлен ли Allure
       - name: Check Allure version
         run: allure --version
 
@@ -101,10 +100,16 @@ jobs:
         uses: actions/download-artifact@v4
         with:
           name: allure-results-${{ github.event.inputs.deployment_target }}
-          pattern: allure-results-${{ github.event.inputs.deployment_target }}
+          path: allure-results
           merge-multiple: true
 
-      # Убедимся, что директория _site существует и очищена
+      # Проверка содержимого папки allure-results
+      - name: List allure-results content
+        run: |
+          echo "Listing contents of allure-results directory"
+          ls -R allure-results || echo "allure-results directory not found"
+
+      # Убедитесь, что директория _site существует и очищена
       - name: Ensure _site directory exists
         run: |
           echo "Checking if _site exists..."
@@ -136,7 +141,7 @@ jobs:
           name: _site
           path: _site
           retention-days: 7
-
+  
 
   publish-report:
     runs-on: macos-latest
@@ -149,7 +154,8 @@ jobs:
       - name: Download generated report
         uses: actions/download-artifact@v4
         with:
-          name: _site  # Имя артефакта, который был загружен ранее
+          name: _site  # Указываем имя артефакта, который был загружен на предыдущем шаге
+          path: _site  # Указываем путь для сохранения артефакта
 
       - name: List files in the downloaded artifact
         run: |
@@ -157,14 +163,20 @@ jobs:
           ls -R _site || echo "_site directory not found"  # Проверка наличия артефакта
 
       - name: Upload Pages artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v4  # Явное указание на v4 для upload-artifact
         with:
           name: _site
           path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v4  # Используем deploy-pages для деплоя на GitHub Pages
         with:
-          folder: _site  # Указываем правильный путь к сгенерированному отчету
+          path: _site  # Используем правильный параметр path для указания директории
+          token: ${{ secrets.GITHUB_TOKEN }}  # Используем секретный токен для деплоя
+          timeout: 600000  # Увеличиваем таймаут, если это необходимо
+          error_count: 10  # Максимальное количество ошибок
+          reporting_interval: 5000  # Интервал для отчетности
+          artifact_name: github-pages  # Указываем имя артефакта, который будет деплоиться
+          preview: false  # Выключаем предварительный просмотр
 
