@@ -182,5 +182,5 @@ jobs:
           timeout: 600000
           error_count: 10
           reporting_interval: 5000
-          artifact_name: github-pages
+          artifact_name: _site-${{ github.run_id }}-${{ github.sha }}
           preview: false
