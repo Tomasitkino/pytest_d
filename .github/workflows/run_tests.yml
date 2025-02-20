@@ -168,11 +168,17 @@ jobs:
           echo "Removing symbolic links recursively in _site directory..."
           find _site -type l -exec rm -v {} \; || echo "No symbolic links found to remove"
 
-      # Проверка содержимого _site перед деплоем
-      - name: List contents of _site before deploy
+      # Проверка содержимого _site после удаления ссылок
+      - name: List contents of _site after removing symlinks
         run: |
-          echo "Listing contents of _site directory before deploy"
+          echo "Listing contents of _site after removing symlinks"
           ls -alR _site || echo "_site directory not found"
+
+      # Шаг для проверки жестких ссылок
+      - name: Check for hard links in _site
+        run: |
+          echo "Checking for hard links in _site directory..."
+          find _site -type f -links +1 -exec echo "Hard link found: {}" \; || echo "No hard links found"
 
       # Проверка прав доступа в _site
       - name: Check permissions of files in _site
@@ -199,6 +205,12 @@ jobs:
             echo "No symbolic links found in _site"
           fi
 
+      # Проверка размера директории _site
+      - name: Check the size of _site directory
+        run: |
+          echo "Checking the size of _site directory..."
+          du -sh _site || echo "_site directory not found"
+
       # Загрузка артефактов для деплоя
       - name: Upload Pages artifact
         uses: actions/upload-artifact@v4
@@ -211,11 +223,10 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          artifact_id: ${{ steps.upload-pages.outputs.artifact_id }}
           token: ${{ secrets.GITHUB_TOKEN }}
           timeout: 600000
           error_count: 10
           reporting_interval: 5000
           artifact_name: _site-${{ github.run_id }}-${{ github.sha }}
           preview: false
-  
+    
