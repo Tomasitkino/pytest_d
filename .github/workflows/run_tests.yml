@@ -134,14 +134,14 @@ jobs:
           echo "Listing files in _site"
           ls -R _site || echo "_site directory not found"
 
-      # Хранение сгенерированного отчета
       - name: Store generated report
         uses: actions/upload-artifact@v4
         with:
           name: _site
           path: _site
           retention-days: 7
-  
+          overwrite: true  # Это позволит перезаписать артефакт, если он уже существует
+
 
   publish-report:
     runs-on: macos-latest
