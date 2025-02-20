@@ -162,10 +162,34 @@ jobs:
           path: _site
           merge-multiple: true
 
-      # Шаг для проверки наличия символических ссылок перед деплоем
+      # Шаг для удаления символических ссылок в подкаталогах _site
+      - name: Remove symbolic links recursively in _site
+        run: |
+          echo "Removing symbolic links recursively in _site directory..."
+          find _site -type l -exec rm -v {} \; || echo "No symbolic links found to remove"
+
+      # Проверка содержимого _site перед деплоем
+      - name: List contents of _site before deploy
+        run: |
+          echo "Listing contents of _site directory before deploy"
+          ls -alR _site || echo "_site directory not found"
+
+      # Проверка прав доступа в _site
+      - name: Check permissions of files in _site
+        run: |
+          echo "Checking permissions of files in _site"
+          find _site -exec ls -l {} \; || echo "Error checking permissions"
+
+      # Шаг для удаления скрытых файлов в _site
+      - name: Remove hidden files in _site
+        run: |
+          echo "Removing hidden files in _site directory..."
+          find _site -name ".*" -exec rm -rf {} \; || echo "No hidden files found to remove"
+
+      # Проверка отсутствия символических ссылок перед деплоем
       - name: Verify no symlinks in _site before deploy
         run: |
-          echo "Checking for symbolic links in _site directory..."
+          echo "Checking for symbolic links in _site directory before deploy..."
           symlinks=$(find _site -type l)
           if [ -n "$symlinks" ]; then
             echo "Symbolic links found before deploy, listing them:"
@@ -175,20 +199,14 @@ jobs:
             echo "No symbolic links found in _site"
           fi
 
-      # Шаг для удаления символических ссылок в подкаталогах _site
-      - name: Remove symbolic links recursively in _site
-        run: |
-          echo "Removing symbolic links recursively in _site directory..."
-          find _site -type l -exec rm -v {} \; || echo "No symbolic links found to remove"
+      # Загрузка артефактов для деплоя
+      - name: Upload Pages artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: _site
+          path: _site
 
-
-      # Шаг для проверки размера директории _site
-      - name: Check the size of _site
-        run: |
-          echo "Checking the size of _site directory..."
-          du -sh _site || echo "_site directory not found"
-
-      # Шаг для деплоя в GitHub Pages
+      # Деплой на GitHub Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
@@ -200,3 +218,4 @@ jobs:
           reporting_interval: 5000
           artifact_name: _site-${{ github.run_id }}-${{ github.sha }}
           preview: false
+  
