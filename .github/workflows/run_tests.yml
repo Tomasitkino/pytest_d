@@ -211,7 +211,7 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          path: _site
+          artifact_id: ${{ steps.upload-pages.outputs.artifact_id }}
           token: ${{ secrets.GITHUB_TOKEN }}
           timeout: 600000
           error_count: 10
