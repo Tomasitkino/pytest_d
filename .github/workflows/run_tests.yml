@@ -82,6 +82,10 @@ jobs:
     runs-on: macos-latest
     needs: tests
     name: Generate Allure Report
+    permissions:
+      actions: read  # Разрешение для чтения артефактов
+      contents: read  # Прочтение репозитория
+      id-token: write  # Разрешение для получения и использования ID токенов
     steps:
       - name: Install Allure Commandline
         run: |
