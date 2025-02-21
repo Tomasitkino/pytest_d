@@ -19,9 +19,9 @@ jobs:
   tests:
     runs-on: macos-latest
     permissions:
-      contents: read  # Прочтение репозитория
-      id-token: write  # Разрешение для получения и использования ID токенов
-      actions: read     # Разрешение для чтения артефактов GitHub Actions
+      contents: read
+      id-token: write
+      actions: read
 
     steps:
       - name: Checkout repository
@@ -32,7 +32,6 @@ jobs:
         with:
           python-version: "3.12"
 
-      # Кэширование зависимостей Python
       - name: Cache Python dependencies
         uses: actions/cache@v4
         with:
@@ -47,7 +46,6 @@ jobs:
       - name: Install dependencies
         run: pip install -r requirements.txt
 
-      # Запуск тестов в зависимости от выбранной цели
       - name: Run tests based on deployment target
         run: |
           if [ "${{ github.event.inputs.deployment_target }}" == "order_hotel_test" ]; then
@@ -64,13 +62,11 @@ jobs:
             pytest tests/test_order_hotel_two_guests.py --alluredir=allure-results
           fi
 
-      # Проверка содержимого allure-results после выполнения тестов
       - name: List allure-results content
         run: |
           echo "Listing contents of allure-results directory"
           ls -R allure-results || echo "allure-results not found"
 
-      # Хранение результатов тестов (Allure results)
       - name: Store allure results
         uses: actions/upload-artifact@v4
         with:
@@ -83,9 +79,9 @@ jobs:
     needs: tests
     name: Generate Allure Report
     permissions:
-      actions: read  # Разрешение для чтения артефактов
-      contents: read  # Прочтение репозитория
-      id-token: write  # Разрешение для получения и использования ID токенов
+      actions: read
+      contents: read
+      id-token: write
     steps:
       - name: Install Allure Commandline
         run: |
@@ -97,7 +93,6 @@ jobs:
       - name: Check Allure version
         run: allure --version
 
-      # Загрузка артефактов с результатами тестов
       - name: Download allure results
         uses: actions/download-artifact@v4
         with:
@@ -105,13 +100,11 @@ jobs:
           path: allure-results
           merge-multiple: true
 
-      # Проверка содержимого папки allure-results
       - name: List allure-results content
         run: |
           echo "Listing contents of allure-results directory"
           ls -R allure-results || echo "allure-results directory not found"
 
-      # Убедитесь, что директория _site существует и очищена
       - name: Ensure _site directory exists
         run: |
           echo "Checking if _site exists..."
@@ -123,36 +116,33 @@ jobs:
             mkdir -p _site
           fi
 
-      # Генерация отчета Allure
       - name: Generate Allure Report
         run: |
           echo "Listing contents of allure-results directory"
           ls -R allure-results || echo "allure-results directory not found"
           allure generate -c allure-results -o _site || (echo "Allure report generation failed" && exit 1)
 
-      # Проверка содержимого директории _site после генерации отчета
       - name: List files in _site after report generation
         run: |
           echo "Listing files in _site"
           ls -R _site || echo "_site directory not found"
 
-      # Хранение сгенерированного отчета
       - name: Store generated report
         uses: actions/upload-artifact@v4
         with:
           name: _site-${{ github.run_id }}-${{ github.sha }}
           path: _site
           retention-days: 7
-          overwrite: false  # Уникальное имя, предотвращает перезапись
+          overwrite: false
 
   publish-report:
     runs-on: macos-latest
     needs: generate-report
     permissions:
-      contents: write  # Для деплоя в GitHub Pages
-      id-token: write  # Разрешение для работы с id-token
-      actions: read     # Разрешение для чтения артефактов GitHub Actions
-      pages: write      # Разрешение для записи в GitHub Pages (важное изменение!)
+      contents: write
+      id-token: write
+      actions: read
+      pages: write
     name: Publish Allure Report to GitHub Pages
     steps:
       - name: Download generated report
@@ -162,7 +152,6 @@ jobs:
           path: _site
           merge-multiple: true
 
-      # Шаг для проверки и удаления символических ссылок по всему проекту
       - name: Check and remove symbolic links in the entire project
         run: |
           echo "Checking for symbolic links in the entire project..."
@@ -175,7 +164,6 @@ jobs:
             echo "No symbolic links found"
           fi
 
-      # Шаг для проверки и удаления жестких ссылок по всему проекту
       - name: Check and remove hard links in the entire project
         run: |
           echo "Checking for hard links in the entire project..."
@@ -188,25 +176,21 @@ jobs:
             echo "No hard links found"
           fi
 
-      # Проверка содержимого _site перед деплоем
       - name: List contents of _site before deploy
         run: |
           echo "Listing contents of _site directory before deploy"
           ls -alR _site || echo "_site directory not found"
 
-      # Проверка прав доступа в _site
       - name: Check permissions of files in _site
         run: |
           echo "Checking permissions of files in _site"
           find _site -exec ls -l {} \; || echo "Error checking permissions"
 
-      # Шаг для удаления скрытых файлов в _site
       - name: Remove hidden files in _site
         run: |
           echo "Removing hidden files in _site directory..."
           find _site -name ".*" -exec rm -rf {} \; || echo "No hidden files found to remove"
 
-      # Проверка отсутствия символических ссылок перед деплоем
       - name: Verify no symlinks in _site before deploy
         run: |
           echo "Checking for symbolic links in _site directory before deploy..."
@@ -219,7 +203,6 @@ jobs:
             echo "No symbolic links found in _site"
           fi
 
-      # Проверка отсутствия жестких ссылок перед деплоем
       - name: Verify no hard links in _site before deploy
         run: |
           echo "Checking for hard links in _site directory before deploy..."
@@ -232,7 +215,6 @@ jobs:
             echo "No hard links found in _site"
           fi
 
-      # Проверка содержимого других папок
       - name: Verify no symlinks in the entire repository
         run: |
           echo "Checking for symbolic links in the entire repository..."
@@ -245,14 +227,12 @@ jobs:
             echo "No symbolic links found in the repository"
           fi
 
-      # Загрузка артефактов для деплоя
       - name: Upload Pages artifact
         uses: actions/upload-artifact@v4
         with:
           name: _site
           path: _site
 
-      # Деплой на GitHub Pages
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
@@ -263,4 +243,3 @@ jobs:
           reporting_interval: 5000
           artifact_name: _site-${{ github.run_id }}-${{ github.sha }}
           preview: false
-      
