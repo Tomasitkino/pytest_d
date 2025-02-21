@@ -175,16 +175,17 @@ jobs:
           ls -alR _site || echo "_site directory not found"
 
       # Шаг для проверки жестких ссылок
-      - name: Check for hard links in _site
+      - name: Verify no hard links in _site before deploy
         run: |
-          echo "Checking for hard links in _site directory..."
-          find _site -type f -links +1 -exec echo "Hard link found: {}" \; || echo "No hard links found"
-
-      # Шаг для удаления жестких ссылок в _site
-      - name: Remove hard links recursively in _site
-        run: |
-          echo "Removing hard links recursively in _site directory..."
-          find _site -type f -links +1 -exec rm -v {} \; || echo "No hard links found to remove"
+          echo "Checking for hard links in _site directory before deploy..."
+          hard_links=$(find _site -type f -links +1)
+          if [ -n "$hard_links" ]; then
+            echo "Hard links found before deploy, listing them:"
+            echo "$hard_links"
+            exit 1
+          else
+            echo "No hard links found in _site"
+          fi
 
       # Проверка прав доступа в _site
       - name: Check permissions of files in _site
@@ -211,12 +212,6 @@ jobs:
             echo "No symbolic links found in _site"
           fi
 
-      # Шаг для проверки жестких ссылок
-      - name: Check for hard links in _site
-        run: |
-          echo "Checking for hard links in _site directory..."
-          find _site -type f -links +1 -exec echo "Hard link found: {}" \; || echo "No hard links found"
-
       # Проверка размера директории _site
       - name: Check the size of _site directory
         run: |
@@ -241,3 +236,4 @@ jobs:
           reporting_interval: 5000
           artifact_name: _site-${{ github.run_id }}-${{ github.sha }}
           preview: false
+  
