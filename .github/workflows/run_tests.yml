@@ -232,6 +232,19 @@ jobs:
             echo "No hard links found in _site"
           fi
 
+      # Проверка содержимого других папок
+      - name: Verify no symlinks in the entire repository
+        run: |
+          echo "Checking for symbolic links in the entire repository..."
+          symlinks=$(find . -type l)
+          if [ -n "$symlinks" ]; then
+            echo "Symbolic links found in the repository, listing them:"
+            echo "$symlinks"
+            exit 1
+          else
+            echo "No symbolic links found in the repository"
+          fi
+
       # Загрузка артефактов для деплоя
       - name: Upload Pages artifact
         uses: actions/upload-artifact@v4
@@ -244,11 +257,10 @@ jobs:
         id: deployment
         uses: actions/deploy-pages@v4
         with:
-          path: _site
           token: ${{ secrets.GITHUB_TOKEN }}
           timeout: 600000
           error_count: 10
           reporting_interval: 5000
           artifact_name: _site-${{ github.run_id }}-${{ github.sha }}
           preview: false
-    
+      
