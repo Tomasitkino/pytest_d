@@ -233,6 +233,12 @@ jobs:
           name: _site
           path: _site
 
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          name: _site-${{ github.run_id }}-${{ github.sha }}
+          path: _site
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
